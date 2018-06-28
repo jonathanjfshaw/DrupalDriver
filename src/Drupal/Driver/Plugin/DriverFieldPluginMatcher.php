@@ -3,9 +3,9 @@
 namespace Drupal\Driver\Plugin;
 
 /**
- * Provides the plugin manager for the Driver's field plugins.
+ * Provides the plugin matcher for the Driver's field plugins.
  */
-class DriverFieldPluginManager extends DriverPluginManagerBase {
+class DriverFieldPluginMatcher extends DriverPluginMatcherBase {
 
   /**
    * {@inheritdoc}

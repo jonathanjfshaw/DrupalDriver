@@ -4,8 +4,8 @@ namespace Drupal\Tests\Driver\Kernel\Drupal8\Entity;
 
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 use Drupal\Tests\Driver\Kernel\DriverKernelTestTrait;
-use Drupal\Driver\Plugin\DriverFieldPluginManager;
-use Drupal\Driver\Plugin\DriverEntityPluginManager;
+use Drupal\Driver\Plugin\DriverFieldPluginMatcher;
+use Drupal\Driver\Plugin\DriverEntityPluginMatcher;
 
 /**
  * Base class for all Driver entity kernel tests.
@@ -54,8 +54,8 @@ class DriverEntityKernelTestBase extends EntityKernelTestBase {
     // Specify a folder where plugins for the current project can be found.
     // @todo This should be the same folder where Behat contexts live.
     $this->projectPluginRoot = "/path/to/project/plugins";
-    $this->fieldPluginManager = new DriverFieldPluginManager($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
-    $this->entityPluginManager = new DriverEntityPluginManager($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
+    $this->fieldPluginMatcher = new DriverFieldPluginMatcher($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
+    $this->entityPluginMatcher = new DriverEntityPluginMatcher($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
   }
 
 }

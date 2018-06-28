@@ -2,12 +2,23 @@
 
 namespace Drupal\Driver\Plugin;
 
-use Drupal\Component\Plugin\PluginManagerInterface;
-
 /**
  * Defines an interface for the Driver's plugin managers.
  */
-interface DriverPluginManagerInterface extends PluginManagerInterface {
+interface DriverPluginMatcherInterface {
+
+  /**
+   * Instantiates a plugin class.
+   *
+   * @param string $id
+   *   The plugin id.
+   * @param array $config
+   *   An array of plugin configuration.
+   *
+   * @return \Drupal\Component\Plugin\PluginInspectionInterface
+   *   An instantiated plugin.
+   */
+  public function createInstance($id, $config);
 
   /**
    * Get plugin definitions matching a target, sorted by weight and specificity.

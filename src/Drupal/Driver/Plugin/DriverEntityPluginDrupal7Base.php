@@ -3,14 +3,13 @@
 namespace Drupal\Driver\Plugin;
 
 use Drupal\Driver\Wrapper\Field\DriverFieldInterface;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
+use Drupal\Driver\Wrapper\Field\DriverFieldDrupal7;
 use Drupal\Driver\Wrapper\Entity\DriverEntityInterface;
 
 /**
  * Provides a base class for the Driver's entity plugins.
  */
-class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements DriverEntityPluginInterface, DriverEntityInterface {
+class DriverEntityPluginDrupal7Base extends DriverEntityPluginBase implements DriverEntityPluginInterface, DriverEntityInterface {
 
   /**
    * The id of the attached entity.
@@ -42,13 +41,13 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
    */
   protected $fieldPluginManager;
 
-
   /**
-   * The drupal entity type manager.
+   * Whether the entity is new.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var bool
    */
-  protected $entityTypeManager;
+  protected $isNew = TRUE;
+
 
   /**
    * {@inheritdoc}
@@ -59,8 +58,6 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
         $plugin_definition
     ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = \Drupal::entityTypeManager();
-    $this->storage = $this->entityTypeManager->getStorage($this->type);
   }
 
   /**
@@ -74,30 +71,31 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
    * {@inheritdoc}
    */
   public function getBundleKey() {
-    return $this->entityTypeManager
-      ->getDefinition($this->type)
-      ->getKey('bundle');
+    $info = entity_get_info($this->type);
+    if (isset($info['entity keys']['bundle'])) {
+      return $info['entity keys']['bundle'];
+    }
+    else {
+      // This entity does not have bundles.
+      return NULL;
+    }
   }
 
   /**
-   * {@inheritdoc}
-   */
+ * {@inheritdoc}
+ */
   public function getBundleKeyLabels() {
-    $bundleKeyLabel = NULL;
+    // @todo find the bundle key label
     $bundleKey = $this->getBundleKey();
-    if (!empty($bundleKey)) {
-      $definitions = \Drupal::service('entity_field.manager')
-        ->getBaseFieldDefinitions($this->type);
-      $bundleKeyLabel = $definitions[$bundleKey]->getLabel();
-    }
-    return [(string) $bundleKeyLabel];
+    return [(string) $bundleKey];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getBundles() {
-    $bundleInfo = \Drupal::service('entity_type.bundle.info')->getBundleInfo($this->type);
+    $info = entity_get_info($this->type);
+    $bundleInfo = $info['bundles'];
     // Parse into array structure used by DriverNameMatcher.
     $bundles = [];
     foreach ($bundleInfo as $machineName => $bundleSettings) {
@@ -110,11 +108,7 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
    * {@inheritdoc}
    */
   public function getEntity() {
-    $entity = parent::getEntity();
-    if (!$entity instanceof EntityInterface) {
-      throw new \Exception("Failed to obtain valid entity");
-    }
-    return $this->entity;
+    // @todo is there any way to validate an object is a Drupal entity in D7?
   }
 
   /**
@@ -124,9 +118,7 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
     $labelKeys = parent::getLabelKeys();
     if (empty($labelKeys)) {
       $labelKeys = [
-        $this->entityTypeManager
-          ->getDefinition($this->type)
-          ->getKey('label'),
+        entity_get_info($this->type)['entity keys']['label']
       ];
     }
     return $labelKeys;
@@ -143,7 +135,7 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
    * {@inheritdoc}
    */
   public function isNew() {
-    if ($this->hasEntity() && !$this->entity->isNew()) {
+    if ($this->hasEntity() && $this->isNew === FALSE) {
       return FALSE;
     }
     return TRUE;
@@ -163,8 +155,7 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
     if ($this->hasEntity()) {
       throw new \Exception("A Drupal entity is already attached to this plugin");
     }
-    $this->entity = $this->getStorage()->load($entityId);
-    $this->id = is_null($this->entity) ? NULL : $this->id();
+    $this->entity = $this->loadById();
     return $this->entity;
   }
 
@@ -176,8 +167,9 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
       throw new \Exception("There is no attached entity so it cannot be reloaded");
     }
     $entityId = $this->getEntity()->id();
-    $this->getStorage()->resetCache([$entityId]);
-    $this->entity = $this->getStorage()->load($entityId);
+    // @todo Investigate whether cache resetting is needed in D7 as it is in D8
+    //$this->getStorage()->resetCache([$entityId]);
+    $this->entity = $this->loadById();
     return $this->entity;
   }
 
@@ -186,6 +178,7 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
    */
   public function save() {
     $this->getEntity()->save();
+    $this->isNew = FALSE;
     $this->id = $this->id();
   }
 
@@ -215,7 +208,7 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
    *   An input that can be transformed into Driver field values.
    */
   protected function getNewDriverField($fieldName, $values) {
-    $field = new DriverFieldDrupal8(
+    $field = new DriverFieldDrupal7(
         $values,
         $fieldName,
         $this->type,
@@ -227,23 +220,21 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
   }
 
   /**
-   * Get the entity type storage.
+   * Get a new entity object.
    *
-   * @return \Drupal\Core\Entity\EntityStorageInterface
-   *   The entity type storage.
-   */
-  protected function getStorage() {
-    return $this->storage;
-  }
-
-  /**
-   * Get a new entity object. This doesn't make sense without an entity API.
-   *
-   * @return object
-   *   An empty entity object.
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   A Drupal entity object.
    */
   protected function getNewEntity() {
-    return new \stdClass();
+    $values = [];
+    // Set the bundle as a field if not simply using the default for
+    // a bundle-less entity type.
+    if ($this->type !== $this->bundle) {
+      $bundleKey = $this->getBundleKey();
+      $values[$bundleKey] = $this->bundle;
+    }
+    $entity = $this->getStorage()->create($values);
+    return $entity;
   }
 
 }

@@ -2,8 +2,8 @@
 
 namespace Drupal\Driver\Wrapper\Field;
 
-use Drupal\Driver\Plugin\DriverPluginManagerInterface;
-use Drupal\Driver\Plugin\DriverFieldPluginManager;
+use Drupal\Driver\Plugin\DriverPluginMatcherInterface;
+use Drupal\Driver\Plugin\DriverFieldPluginMatcher;
 
 /**
  * A base class for a Driver field wrapper.
@@ -53,11 +53,11 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   protected $processedValues;
 
   /**
-   * A driver field plugin manager object.
+   * A driver field plugin matcher object.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $fieldPluginManager;
+  protected $fieldPluginMatcher;
 
   /**
    * Directory to search for additional project-specific driver plugins.
@@ -80,8 +80,8 @@ abstract class DriverFieldBase implements DriverFieldInterface {
    *   (optional) Machine name of the entity bundle the field is attached to.
    * @param string $projectPluginRoot
    *   The directory to search for additional project-specific driver plugins.
-   * @param null|\Drupal\Driver\Plugin\DriverPluginManagerInterface $fieldPluginManager
-   *   (optional) A driver field plugin manager.
+   * @param null|\Drupal\Driver\Plugin\DriverPluginMatcherInterface $fieldPluginMatcher
+   *   (optional) A driver field plugin matcher.
    */
   public function __construct(
         $rawValues,
@@ -89,7 +89,7 @@ abstract class DriverFieldBase implements DriverFieldInterface {
         $entityType,
         $bundle = NULL,
         $projectPluginRoot = NULL,
-        $fieldPluginManager = NULL
+        $fieldPluginMatcher = NULL
     ) {
 
     // Default to entity type as bundle if no bundle specified.
@@ -102,7 +102,7 @@ abstract class DriverFieldBase implements DriverFieldInterface {
       $rawValues = [$rawValues];
     }
     $this->projectPluginRoot = $projectPluginRoot;
-    $this->setFieldPluginManager($fieldPluginManager, $projectPluginRoot);
+    $this->setFieldPluginMatcher($fieldPluginMatcher);
     $this->rawValues = $rawValues;
     $this->entityType = $entityType;
     $this->bundle = $bundle;
@@ -137,12 +137,12 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   public function getProcessedValues() {
     if (is_null($this->processedValues)) {
       $this->setProcessedValues($this->getRawValues());
-      $fieldPluginManager = $this->getFieldPluginManager();
-      $definitions = $fieldPluginManager->getMatchedDefinitions($this);
+      $fieldPluginMatcher = $this->getFieldPluginMatcher();
+      $definitions = $fieldPluginMatcher->getMatchedDefinitions($this);
       // Process values through matched plugins, until a plugin
       // declares it is the final one.
       foreach ($definitions as $definition) {
-        $plugin = $fieldPluginManager->createInstance($definition['id'], ['field' => $this]);
+        $plugin = $fieldPluginMatcher->createInstance($definition['id'], ['field' => $this]);
         $processedValues = $plugin->processValues($this->processedValues);
         if (!is_array($processedValues)) {
           throw new \Exception("Field plugin failed to return array of processed values.");
@@ -183,11 +183,11 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   /**
    * Sets the processed values.
    *
-   * @return \Drupal\Driver\Plugin\DriverPluginManagerInterface
-   *   The field plugin manager.
+   * @return \Drupal\Driver\Plugin\DriverPluginMatcherInterface
+   *   The field plugin matcher.
    */
-  protected function getFieldPluginManager() {
-    return $this->fieldPluginManager;
+  protected function getFieldPluginMatcher() {
+    return $this->fieldPluginMatcher;
   }
 
   /**
@@ -208,18 +208,16 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   }
 
   /**
-   * Set the driver field plugin manager.
+   * Set the driver field plugin matcher.
    *
-   * @param mixed $manager
-   *   The driver entity plugin manager.
-   * @param string $projectPluginRoot
-   *   The directory to search for additional project-specific driver plugins.
+   * @param mixed $matcher
+   *   The driver entity plugin matcher.
    */
-  protected function setFieldPluginManager($manager, $projectPluginRoot) {
-    if (!($manager instanceof DriverPluginManagerInterface)) {
-      $manager = new DriverFieldPluginManager($this->namespaces, $this->cache_backend, $this->module_handler, $this->version, $projectPluginRoot);
+  protected function setFieldPluginMatcher($matcher) {
+    if (!($matcher instanceof DriverPluginMatcherInterface)) {
+      $matcher = new DriverFieldPluginMatcher($this->version, $this->projectPluginRoot);
     }
-    $this->fieldPluginManager = $manager;
+    $this->fieldPluginMatcher = $matcher;
   }
 
 }

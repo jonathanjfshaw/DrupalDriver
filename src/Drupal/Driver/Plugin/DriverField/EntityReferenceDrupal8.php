@@ -4,7 +4,7 @@ namespace Drupal\Driver\Plugin\DriverField;
 
 use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
 use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
-use Drupal\Driver\Plugin\DriverEntityPluginManager;
+use Drupal\Driver\Plugin\DriverEntityPluginMatcher;
 
 /**
  * A driver field plugin for entity reference fields.
@@ -150,6 +150,8 @@ class EntityReferenceDrupal8 extends DriverFieldPluginDrupal8Base {
    *   An instantiated driver entity plugin object.
    */
   protected function getEntityPlugin() {
+    // @todo can this all be done using DriverEntityDrupal8 rather than
+    // duplicating plugin instantiation code here?
     $projectPluginRoot = $this->field->getProjectPluginRoot();
 
     // Build the basic config for the plugin.
@@ -170,18 +172,15 @@ class EntityReferenceDrupal8 extends DriverFieldPluginDrupal8Base {
     }
 
     // Discover & instantiate plugin.
-    $namespaces = \Drupal::service('container.namespaces');
-    $cache_backend = $cache_backend = \Drupal::service('cache.discovery');
-    $module_handler = $module_handler = \Drupal::service('module_handler');
-    $manager = new DriverEntityPluginManager($namespaces, $cache_backend, $module_handler, $this->pluginDefinition['version'], $this->field->getProjectPluginRoot());
+    $matcher = new DriverEntityPluginMatcher($this->pluginDefinition['version'], $this->field->getProjectPluginRoot());
 
     // Get only the highest priority matched plugin.
-    $matchedDefinitions = $manager->getMatchedDefinitions($targetEntity);
+    $matchedDefinitions = $matcher->getMatchedDefinitions($targetEntity);
     if (count($matchedDefinitions) === 0) {
       throw new \Exception("No matching DriverEntity plugins found.");
     }
     $topDefinition = $matchedDefinitions[0];
-    $plugin = $manager->createInstance($topDefinition['id'], $config);
+    $plugin = $matcher->createInstance($topDefinition['id'], $config);
     return $plugin;
   }
 

@@ -3,6 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
 
 /**
  * Drupal 7 core.
@@ -61,8 +62,10 @@ class Drupal7 extends AbstractCore {
     node_object_prepare($defaults);
     $node = (object) array_merge((array) $defaults, (array) $node);
 
-    node_save($node);
-    return $node;
+    $entity = $this->getNewEntity('node');
+    $entity->setFields((array) $node);
+    $entity->save();
+    return $entity->getEntity();
   }
 
   /**
@@ -565,6 +568,17 @@ class Drupal7 extends AbstractCore {
   public function sendMail($body, $subject = '', $to = '', $langcode = '') {
     // @todo: create a D7 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * Get a new driver entity wrapper.
+   *
+   * @return \Drupal\Driver\Wrapper\Entity\DriverEntityWrapperInterface
+   *   A new driver entity wrapper.
+   */
+  public function getNewEntity($type, $bundle = NULL) {
+    $entity = new DriverEntityDrupal7($type, $bundle);
+    return $entity;
   }
 
 }

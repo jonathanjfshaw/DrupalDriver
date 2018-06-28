@@ -62,7 +62,7 @@ class DriverFieldDrupal8 extends DriverFieldBase implements DriverFieldInterface
         $entityType,
         $bundle = NULL,
         $projectPluginRoot = NULL,
-        $fieldPluginManager = NULL
+        $fieldPluginMatcher = NULL
     ) {
     $entityTypeDefinition = \Drupal::EntityTypeManager()
       ->getDefinition($entityType);
@@ -73,12 +73,7 @@ class DriverFieldDrupal8 extends DriverFieldBase implements DriverFieldInterface
       $this->configSchema = $configProperties;
     }
 
-    // Set Drupal environment variables used by default plugin manager.
-    $this->namespaces = \Drupal::service('container.namespaces');
-    $this->cache_backend = $cache_backend = \Drupal::service('cache.discovery');
-    $this->module_handler = $module_handler = \Drupal::service('module_handler');
-
-    parent::__construct($rawValues, $fieldName, $entityType, $bundle, $projectPluginRoot, $fieldPluginManager);
+    parent::__construct($rawValues, $fieldName, $entityType, $bundle, $projectPluginRoot, $fieldPluginMatcher);
   }
 
   /**
@@ -86,8 +81,8 @@ class DriverFieldDrupal8 extends DriverFieldBase implements DriverFieldInterface
    */
   public function getDefinition() {
     if (is_null($this->definition) && !$this->isConfigProperty) {
-      $entityFieldManager = \Drupal::service('entity_field.manager');
-      $definitions = $entityFieldManager->getFieldDefinitions($this->getEntityType(), $this->getBundle());
+      $entityFieldMatcher = \Drupal::service('entity_field.manager');
+      $definitions = $entityFieldMatcher->getFieldDefinitions($this->getEntityType(), $this->getBundle());
       $this->definition = $definitions[$this->getName()];
     }
     return $this->definition;
@@ -138,8 +133,8 @@ class DriverFieldDrupal8 extends DriverFieldBase implements DriverFieldInterface
       }
     }
     else {
-      $entityManager = \Drupal::service('entity_field.manager');
-      $fields = $entityManager->getFieldDefinitions($this->entityType, $this->bundle);
+      $entityMatcher = \Drupal::service('entity_field.manager');
+      $fields = $entityMatcher->getFieldDefinitions($this->entityType, $this->bundle);
       foreach ($fields as $machineName => $definition) {
         $label = (string) $definition->getLabel();
         $label = empty($label) ? $machineName : $label;

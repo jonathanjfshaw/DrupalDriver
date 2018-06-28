@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\Driver\Kernel\Drupal8\Field;
 
-use Drupal\Driver\Plugin\DriverFieldPluginManager;
+use Drupal\Driver\Plugin\DriverFieldPluginMatcher;
 use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
 
 /**
@@ -13,11 +13,11 @@ use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
 class DriverFieldTest extends DriverFieldKernelTestBase {
 
   /**
-   * Field plugin manager.
+   * Field plugin matcher.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $fieldPluginManager;
+  protected $fieldPluginMatcher;
 
   /**
    * {@inheritdoc}
@@ -27,7 +27,7 @@ class DriverFieldTest extends DriverFieldKernelTestBase {
     $namespaces = \Drupal::service('container.namespaces');
     $cache_backend = \Drupal::service('cache.discovery');
     $module_handler = \Drupal::service('module_handler');
-    $this->fieldPluginManager = new DriverFieldPluginManager($namespaces, $cache_backend, $module_handler, 8);
+    $this->fieldPluginMatcher = new DriverFieldPluginMatcher($namespaces, $cache_backend, $module_handler, 8);
   }
 
   /**
@@ -162,7 +162,7 @@ class DriverFieldTest extends DriverFieldKernelTestBase {
   }
 
   /**
-   * Tests the basic methods of the field plugin manager and base.
+   * Tests the basic methods of the field plugin matcher and base.
    *
    * @param string $identifier
    *   The string used to identify the field to be wrapped.

@@ -21,18 +21,18 @@ class DriverEntityTest extends DriverEntityKernelTestBase {
   protected $entityType = 'entity_test';
 
   /**
-   * A field plugin manager object.
+   * A field plugin matcher object.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $fieldPluginManager;
+  protected $fieldPluginMatcher;
 
   /**
-   * A field plugin manager object.
+   * A field plugin matcher object.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $entityPluginManager;
+  protected $entityPluginMatcher;
 
   /**
    * Test various ways of setting field values on entities.
@@ -171,11 +171,11 @@ class DriverEntityTest extends DriverEntityKernelTestBase {
     $config = [
       'type' => $this->entityType,
       'bundle' => $this->entityType,
-      'fieldPluginManager' => $this->fieldPluginManager,
+      'fieldPluginMatcher' => $this->fieldPluginMatcher,
     ];
     // Normally the test plugin is ignored because it is a lower weight than
     // the generic plugin. Test if we can explicitly set it.
-    $plugin = $this->entityPluginManager->createInstance('test8', $config);
+    $plugin = $this->entityPluginMatcher->createInstance('test8', $config);
     $entity->setFinalPlugin($plugin);
     $this->assertEquals('test8', $entity->getFinalPlugin()->getPluginId());
   }

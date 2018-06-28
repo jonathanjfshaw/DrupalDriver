@@ -3,9 +3,9 @@
 namespace Drupal\Driver\Plugin;
 
 /**
- * Provides the plugin manager for the Driver's entity plugins.
+ * Provides the plugin matcher for the Driver's entity plugins.
  */
-class DriverEntityPluginManager extends DriverPluginManagerBase {
+class DriverEntityPluginMatcher extends DriverPluginMatcherBase {
 
   /**
    * {@inheritdoc}

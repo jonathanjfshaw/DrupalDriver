@@ -2,7 +2,7 @@
 
 namespace Drupal\Driver\Wrapper\Entity;
 
-use Drupal\Driver\Plugin\DriverPluginManagerInterface;
+use Drupal\Driver\Plugin\DriverPluginMatcherInterface;
 use Drupal\Driver\Plugin\DriverNameMatcher;
 
 /**
@@ -23,16 +23,12 @@ class DriverEntityDrupal8 extends DriverEntityBase implements DriverEntityWrappe
   public function __construct(
         $type,
         $bundle = NULL,
-        DriverPluginManagerInterface $entityPluginManager = NULL,
-        DriverPluginManagerInterface $fieldPluginManager = NULL,
+        DriverPluginMatcherInterface $entityPluginMatcher = NULL,
+        DriverPluginMatcherInterface $fieldPluginMatcher = NULL,
         $projectPluginRoot = NULL
     ) {
-    // Set Drupal environment variables used by default plugin manager.
-    $this->namespaces = \Drupal::service('container.namespaces');
-    $this->cache_backend = $cache_backend = \Drupal::service('cache.discovery');
-    $this->module_handler = $module_handler = \Drupal::service('module_handler');
 
-    parent::__construct($type, $bundle, $entityPluginManager, $fieldPluginManager, $projectPluginRoot);
+    parent::__construct($type, $bundle, $entityPluginMatcher, $fieldPluginMatcher, $projectPluginRoot);
   }
 
   /**
@@ -69,7 +65,7 @@ class DriverEntityDrupal8 extends DriverEntityBase implements DriverEntityWrappe
    * Set the entity type.
    *
    * @param string $identifier
-   *   A human-friendly name for an entity type .
+   *   A machine or human-friendly name for an entity type .
    */
   protected function setType($identifier) {
     $typeDefinitions = \Drupal::EntityTypeManager()->getDefinitions();

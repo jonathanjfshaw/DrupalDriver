@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\Driver\Kernel\Drupal8\Entity;
 
-use Drupal\Driver\Plugin\DriverFieldPluginManager;
-use Drupal\Driver\Plugin\DriverEntityPluginManager;
+use Drupal\Driver\Plugin\DriverFieldPluginMatcher;
+use Drupal\Driver\Plugin\DriverEntityPluginMatcher;
 use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
 use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
 use Drupal\entity_test\Entity\EntityTestBundle;
@@ -23,18 +23,18 @@ class DriverEntityWithBundleTest extends DriverEntityKernelTestBase {
   protected $entityType = 'entity_test_with_bundle';
 
   /**
-   * A field plugin manager object.
+   * A field plugin matcher object.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $fieldPluginManager;
+  protected $fieldPluginMatcher;
 
   /**
-   * A field plugin manager object.
+   * A field plugin matcher object.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $entityPluginManager;
+  protected $entityPluginMatcher;
 
   /**
    * {@inheritdoc}
@@ -44,8 +44,8 @@ class DriverEntityWithBundleTest extends DriverEntityKernelTestBase {
     $namespaces = \Drupal::service('container.namespaces');
     $cache_backend = \Drupal::service('cache.discovery');
     $module_handler = \Drupal::service('module_handler');
-    $this->fieldPluginManager = new DriverFieldPluginManager($namespaces, $cache_backend, $module_handler, 8);
-    $this->entityPluginManager = new DriverEntityPluginManager($namespaces, $cache_backend, $module_handler, 8);
+    $this->fieldPluginMatcher = new DriverFieldPluginMatcher($namespaces, $cache_backend, $module_handler, 8);
+    $this->entityPluginMatcher = new DriverEntityPluginMatcher($namespaces, $cache_backend, $module_handler, 8);
     $this->installEntitySchema('entity_test_with_bundle');
     EntityTestBundle::create([
       'id' => 'test_bundle',

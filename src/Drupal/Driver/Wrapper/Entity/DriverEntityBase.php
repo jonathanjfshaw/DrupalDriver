@@ -3,8 +3,8 @@
 namespace Drupal\Driver\Wrapper\Entity;
 
 use Drupal\Driver\Plugin\DriverEntityPluginInterface;
-use Drupal\Driver\Plugin\DriverEntityPluginManager;
-use Drupal\Driver\Plugin\DriverPluginManagerInterface;
+use Drupal\Driver\Plugin\DriverEntityPluginMatcher;
+use Drupal\Driver\Plugin\DriverPluginMatcherInterface;
 use Drupal\Driver\Wrapper\Field\DriverFieldInterface;
 use Drupal\Driver\Plugin\DriverNameMatcher;
 
@@ -28,18 +28,18 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
   protected $bundle;
 
   /**
-   * A driver entity plugin manager object.
+   * A driver entity plugin matcher object.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $entityPluginManager;
+  protected $entityPluginMatcher;
 
   /**
-   * A driver field plugin manager object.
+   * A driver field plugin matcher object.
    *
-   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   * @var \Drupal\Driver\Plugin\DriverPluginMatcherInterface
    */
-  protected $fieldPluginManager;
+  protected $fieldPluginMatcher;
 
   /**
    * The directory to search for additional project-specific driver plugins.
@@ -69,24 +69,24 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
    *   Machine name of the entity type.
    * @param string $bundle
    *   (optional) Machine name of the entity bundle.
-   * @param \Drupal\Driver\Plugin\DriverPluginManagerInterface $entityPluginManager
-   *   (optional) An driver entity plugin manager.
-   * @param \Drupal\Driver\Plugin\DriverPluginManagerInterface $fieldPluginManager
-   *   (optional) An driver entity plugin manager.
+   * @param \Drupal\Driver\Plugin\DriverPluginMatcherInterface $entityPluginMatcher
+   *   (optional) An driver entity plugin matcher.
+   * @param \Drupal\Driver\Plugin\DriverPluginMatcherInterface $fieldPluginMatcher
+   *   (optional) An driver entity plugin matcher.
    * @param string $projectPluginRoot
    *   The directory to search for additional project-specific driver plugins .
    */
   public function __construct(
         $type,
         $bundle = NULL,
-        DriverPluginManagerInterface $entityPluginManager = NULL,
-        DriverPluginManagerInterface $fieldPluginManager = NULL,
+        DriverPluginMatcherInterface $entityPluginMatcher = NULL,
+        DriverPluginMatcherInterface $fieldPluginMatcher = NULL,
         $projectPluginRoot = NULL
     ) {
 
-    $this->setEntityPluginManager($entityPluginManager, $projectPluginRoot);
-    $this->fieldPluginManager = $fieldPluginManager;
     $this->projectPluginRoot = $projectPluginRoot;
+    $this->setEntityPluginMatcher($entityPluginMatcher);
+    $this->fieldPluginMatcher = $fieldPluginMatcher;
     $this->setType($type);
 
     // Provisional plugin set before bundle as it's used in bundle validation.
@@ -172,17 +172,17 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
       'type' => $this->getEntityTypeId(),
       'bundle' => $this->bundle(),
       'projectPluginRoot' => $this->projectPluginRoot,
-      'fieldPluginManager' => $this->fieldPluginManager,
+      'fieldPluginMatcher' => $this->fieldPluginMatcher,
     ];
 
     // Discover, instantiate and store plugin.
     // Get only the highest priority matched plugin.
-    $matchedDefinitions = $this->entityPluginManager->getMatchedDefinitions($this);
+    $matchedDefinitions = $this->entityPluginMatcher->getMatchedDefinitions($this);
     if (count($matchedDefinitions) === 0) {
       throw new \Exception("No matching DriverEntity plugins found.");
     }
     $topDefinition = $matchedDefinitions[0];
-    $plugin = $this->entityPluginManager->createInstance($topDefinition['id'], $config);
+    $plugin = $this->entityPluginMatcher->createInstance($topDefinition['id'], $config);
     if (!($plugin instanceof DriverEntityPluginInterface)) {
       throw new \Exception("DriverEntity plugin '" . $topDefinition['id'] . "' failed to instantiate.");
     }
@@ -400,7 +400,7 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
     $this->getEntityTypeId(),
     $this->bundle(),
     $this->projectPluginRoot,
-    $this->fieldPluginManager
+    $this->fieldPluginMatcher
     );
     return $field;
   }
@@ -444,18 +444,16 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
   }
 
   /**
-   * Set the driver entity plugin manager.
+   * Set the driver entity plugin matcher.
    *
-   * @param mixed $manager
-   *   The driver entity plugin manager.
-   * @param string $projectPluginRoot
-   *   The directory to search for additional project-specific driver plugins.
+   * @param mixed $matcher
+   *   The driver entity plugin matcher.
    */
-  protected function setEntityPluginManager($manager, $projectPluginRoot) {
-    if (!($manager instanceof DriverPluginManagerInterface)) {
-      $manager = new DriverEntityPluginManager($this->namespaces, $this->cache_backend, $this->module_handler, $this->version, $projectPluginRoot);
+  protected function setEntityPluginMatcher($matcher) {
+    if (!($matcher instanceof DriverPluginMatcherInterface)) {
+      $matcher = new DriverEntityPluginMatcher($this->version, $this->projectPluginRoot);
     }
-    $this->entityPluginManager = $manager;
+    $this->entityPluginMatcher = $matcher;
   }
 
   /**
@@ -468,4 +466,13 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
     $this->provisionalPlugin = $plugin;
   }
 
+  /**
+   * Set the entity type.
+   *
+   * @param string $identifier
+   *   A machine or human-friendly name for an entity type .
+   */
+  protected function setType($identifier) {
+    $this->type = $identifier;
+  }
 }

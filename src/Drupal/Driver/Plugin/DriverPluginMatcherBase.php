@@ -2,14 +2,12 @@
 
 namespace Drupal\Driver\Plugin;
 
-use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Component\Plugin\PluginManagerInterface;
 
 /**
  * Provides a base class for the Driver's plugin managers.
  */
-abstract class DriverPluginManagerBase extends DefaultPluginManager implements DriverPluginManagerInterface {
+class DriverPluginMatcherBase implements DriverPluginMatcherInterface {
 
   /**
    * The name of the plugin type this is the manager for.
@@ -53,56 +51,41 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
   protected $version;
 
   /**
+   * The directory to search for additional project-specific driver plugins.
+   *
+   * @var string
+   */
+  protected $projectPluginRoot;
+
+  /**
+   * A plugin manager.
+   *
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
+   */
+  protected $manager;
+
+  /**
    * Constructor for DriverPluginManagerBase objects.
    *
-   * @param \Traversable $namespaces
-   *   An object that implements \Traversable which contains the root paths
-   *   keyed by the corresponding namespace to look for plugin implementations.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   Cache backend instance to use.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler to invoke the alter hook with.
    * @param int $version
    *   Drupal major version number.
    * @param string $projectPluginRoot
    *   The directory to search for additional project-specific driver plugins.
    */
   public function __construct(
-        \Traversable $namespaces,
-        CacheBackendInterface $cache_backend,
-        ModuleHandlerInterface $module_handler,
-        $version,
-        $projectPluginRoot = NULL
-    ) {
+    $version,
+    $projectPluginRoot = NULL
+  ) {
 
     $this->version = $version;
+    $this->projectPluginRoot = $projectPluginRoot;
+  }
 
-    // Add the driver to the namespaces searched for plugins.
-    $reflection = new \ReflectionClass($this);
-    $driverPath = dirname(dirname($reflection->getFileName()));
-    $namespaces = $namespaces->getArrayCopy();
-    $supplementedNamespaces = new \ArrayObject();
-    foreach ($namespaces as $name => $class) {
-      $supplementedNamespaces[$name] = $class;
-    }
-    $supplementedNamespaces['Drupal\Driver'] = $driverPath;
-
-    if (!is_null($projectPluginRoot)) {
-      // Need some way to load project-specific plugins.
-      // $supplementedNamespaces['Drupal\Driver'] = $projectPluginRoot;.
-    }
-
-    parent::__construct(
-        'Plugin/' . $this->getDriverPluginType(),
-        $supplementedNamespaces,
-        $module_handler,
-        'Drupal\Driver\Plugin\\' . $this->getDriverPluginType() . 'PluginInterface',
-        'Drupal\Driver\Annotation\\' . $this->getDriverPluginType()
-    );
-
-    if (!is_null($cache_backend)) {
-      $this->setCacheBackend($cache_backend, $this->getDriverPluginType() . '_plugins');
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function createInstance($id, $config) {
+    return $this->getManager()->createInstance($id, $config);
   }
 
   /**
@@ -123,11 +106,70 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
       return $this->matchedDefinitions[$targetKey];
     }
 
-    // Discover plugins & discard those that don't match the target.
+    // Discover plugins, discard those that don't match the target, and sort.
     $definitions = $this->getDefinitions();
-    $definitions = $this->filterDefinitionsByTarget($target, $definitions);
+    $filteredDefinitions = $this->filterDefinitionsByTarget($target, $definitions);
+    $sortedDefinitions = $this->sortDefinitions($filteredDefinitions);
 
-    // Group the plugins according to weight.
+    $this->setMatchedDefinitions($targetKey, $sortedDefinitions);
+    return $this->matchedDefinitions[$targetKey];
+  }
+
+  /**
+   * Discover all available plugins.
+   *
+   * @return array
+   *   An array of plugin definitions.
+   */
+  protected function getDefinitions() {
+    return $this->getManager()->getDefinitions();
+  }
+
+  /**
+   * Convert a target object into a filterable target.
+   *
+   * @param array|object $rawTarget
+   *   An array or object that is the target to match definitions against.
+   *
+   * @return array
+   *   An array with a key for each filter used by this plugin manager.
+   */
+  protected function getFilterableTarget($rawTarget) {
+    return $rawTarget;
+  }
+
+  /**
+   * Get a plugin manager suitable for this Drupal version.
+   *
+   * @return \Drupal\Component\Plugin\PluginManagerInterface
+   *   A plugin manager.
+   */
+  protected function getManager() {
+    if (!($this->manager instanceof PluginManagerInterface)) {
+      if ($this->getVersion() == '6') {
+        $this->manager = New DriverPluginManagerDrupal6($this->getDriverPluginType(), $this->projectPluginRoot);
+      }
+      elseif ($this->getVersion() == '7') {
+        $this->manager = New DriverPluginManagerDrupal7($this->getDriverPluginType(), $this->projectPluginRoot);
+      }
+      else {
+        $this->manager = New DriverPluginManagerDrupal8($this->getDriverPluginType(), $this->getVersion(), $this->projectPluginRoot);
+      }
+    }
+    return $this->manager;
+  }
+
+  /**
+   * Sort an array of plugin definitions by specificity and weight.
+   *
+   * @param array $definitions
+   *   An array of definitions.
+   *
+   * @return array
+   *   An array of definitions sorted by specificity and weight.
+   */
+  protected function sortDefinitions($definitions) {
+    // Group the plugins definitions according to weight.
     $weighted_definitions = [];
     foreach ($definitions as $definition) {
       $weight = $definition['weight'];
@@ -151,22 +193,7 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
       $flattenedDefinitions = call_user_func_array('array_merge', $groupedDefinitions);
       $flattenedDefinitions = call_user_func_array('array_merge', $flattenedDefinitions);
     }
-
-    $this->setMatchedDefinitions($targetKey, $flattenedDefinitions);
-    return $this->matchedDefinitions[$targetKey];
-  }
-
-  /**
-   * Convert a target object into a filterable target.
-   *
-   * @param array|object $rawTarget
-   *   An array or object that is the target to match definitions against.
-   *
-   * @return array
-   *   An array with a key for each filter used by this plugin manager.
-   */
-  protected function getFilterableTarget($rawTarget) {
-    return $rawTarget;
+    return $flattenedDefinitions;
   }
 
   /**
@@ -263,33 +290,7 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
   }
 
   /**
-   * Finds plugin definitions.
-   *
-   * Overwrites the parent method to retain discovered plugins with the provider
-   * 'driver'. The parent implementation is not aware of this Drupal Driver.
-   *
-   * @return array
-   *   List of discovered plugin definitions.
-   */
-  protected function findDefinitions() {
-    $definitions = $this->getDiscovery()->getDefinitions();
-    foreach ($definitions as $plugin_id => &$definition) {
-      $this->processDefinition($definition, $plugin_id);
-    }
-    $this->alterDefinitions($definitions);
-    // If this plugin was provided by a module that does not exist, remove the
-    // plugin definition.
-    foreach ($definitions as $plugin_id => $plugin_definition) {
-      $provider = $this->extractProviderFromDefinition($plugin_definition);
-      if ($provider && !in_array($provider, ['driver', 'core', 'component']) && !$this->providerExists($provider)) {
-        unset($definitions[$plugin_id]);
-      }
-    }
-    return $definitions;
-  }
-
-  /**
-   * Get the name of the type of driver plugin this is the manager of.
+   * Get the name of the type of driver plugin being matched.
    *
    * @return string
    *   The name of the type of driver plugin being managed.
