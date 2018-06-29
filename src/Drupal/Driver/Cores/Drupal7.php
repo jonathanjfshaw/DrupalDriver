@@ -3,7 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
+use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal7;
 
 /**
  * Drupal 7 core.
