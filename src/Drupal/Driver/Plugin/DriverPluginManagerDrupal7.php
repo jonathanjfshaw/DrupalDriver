@@ -5,6 +5,7 @@ namespace Drupal\Driver\Plugin;
 use Drupal\Component\Plugin\Discovery\DiscoveryCachedTrait;
 use Drupal\Component\Plugin\PluginManagerBase;
 use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\Component\Annotation\Plugin\Discovery\AnnotatedClassDiscovery;
 
 /**
  * Provides a plugin manager for the Driver with Drupal 7.
@@ -66,6 +67,17 @@ class DriverPluginManagerDrupal7 extends PluginManagerBase implements PluginMana
     // @todo make this work for D7
     return true;
     return $this->moduleHandler->moduleExists($provider);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getDiscovery() {
+    if (!$this->discovery) {
+      $discovery = new AnnotatedClassDiscovery($this->namespaces, $this->pluginDefinitionAnnotationName);
+      //$this->discovery = new ContainerDerivativeDiscoveryDecorator($discovery);
+    }
+    return $this->discovery;
   }
 
 }

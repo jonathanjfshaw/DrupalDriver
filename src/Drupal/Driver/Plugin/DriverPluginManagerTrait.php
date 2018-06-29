@@ -42,6 +42,7 @@ trait DriverPluginManagerTrait {
     }
     // If this plugin was provided by a module that does not exist, remove the
     // plugin definition.
+    // @todo consider overriding getProviderFromNamespace instead of hacking round this??
     foreach ($definitions as $plugin_id => $plugin_definition) {
       $provider = $this->extractProviderFromDefinition($plugin_definition);
       if ($provider && !in_array($provider, ['driver', 'core', 'component']) && !$this->providerExists($provider)) {
@@ -77,6 +78,7 @@ trait DriverPluginManagerTrait {
       return $plugin_definition['provider'];
     }
   }
+
 
   /**
    * Performs extra processing on plugin definitions.
