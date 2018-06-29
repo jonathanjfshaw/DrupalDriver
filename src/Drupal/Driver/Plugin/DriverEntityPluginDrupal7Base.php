@@ -220,21 +220,13 @@ class DriverEntityPluginDrupal7Base extends DriverEntityPluginBase implements Dr
   }
 
   /**
-   * Get a new entity object.
+   * Get a new entity object. This doesn't make sense without an entity API.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
-   *   A Drupal entity object.
+   * @return object
+   *   An empty entity object.
    */
   protected function getNewEntity() {
-    $values = [];
-    // Set the bundle as a field if not simply using the default for
-    // a bundle-less entity type.
-    if ($this->type !== $this->bundle) {
-      $bundleKey = $this->getBundleKey();
-      $values[$bundleKey] = $this->bundle;
-    }
-    $entity = $this->getStorage()->create($values);
-    return $entity;
+    return new \stdClass();
   }
 
 }
