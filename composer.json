@@ -46,7 +46,7 @@
       "phpunit --testsuite KernelD${DRUPAL} --bootstrap web/core/tests/bootstrap.php"
     ],
     "test-behat": [
-      "behat -fprogress --profile=drupal${DRUPAL}"
+      "behat -fprogress --profile=drupal${DRUPAL} -vv"
     ],
     "install-D8": [
       "COMPOSER_ROOT_VERSION=dev-master composer require drupal/core:^8.5 symfony/dependency-injection:3.4.11 symfony/translation:3.4.11 symfony/console:3.4.11",
