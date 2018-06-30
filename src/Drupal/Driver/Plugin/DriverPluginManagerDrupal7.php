@@ -86,7 +86,7 @@ class DriverPluginManagerDrupal7 extends PluginManagerBase implements PluginMana
    */
   protected function getDiscovery() {
     if (!$this->discovery) {
-      $discovery = new AnnotatedClassDiscovery($this->namespaces, $this->pluginDefinitionAnnotationName);
+      $this->discovery = new AnnotatedClassDiscovery($this->namespaces, $this->pluginDefinitionAnnotationName);
       //$this->discovery = new ContainerDerivativeDiscoveryDecorator($discovery);
     }
     return $this->discovery;
