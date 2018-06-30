@@ -15,6 +15,11 @@ class DriverPluginManagerDrupal7 extends PluginManagerBase implements PluginMana
   use DriverPluginManagerTrait;
   use DiscoveryCachedTrait;
 
+  protected $pluginDefinitionAnnotationName;
+  protected $subdir;
+  protected $namespaces;
+  protected $pluginInterface;
+
   /**
    * Constructor for DriverPluginManagerBase objects.
    *
