@@ -53,7 +53,7 @@ class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface
    *
    * @var int
    */
-  protected $version = 8;
+  protected $version = 7;
 
   /**
    * {@inheritdoc}
@@ -66,14 +66,14 @@ class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface
         $projectPluginRoot = NULL,
         $fieldPluginMatcher = NULL
     ) {
-    $entityTypeDefinition = \Drupal::EntityTypeManager()
-      ->getDefinition($entityType);
-    if ($entityTypeDefinition->entityClassImplements(ConfigEntityInterface::class)) {
-      $this->isConfigProperty = TRUE;
-      $configPrefix = $entityTypeDefinition->getConfigPrefix();
-      $configProperties = \Drupal::service('config.typed')->getDefinition("$configPrefix.*")['mapping'];
-      $this->configSchema = $configProperties;
-    }
+    //$entityTypeDefinition = \Drupal::EntityTypeManager()
+    //  ->getDefinition($entityType);
+    //if ($entityTypeDefinition->entityClassImplements(ConfigEntityInterface::class)) {
+    //  $this->isConfigProperty = TRUE;
+      //$configPrefix = $entityTypeDefinition->getConfigPrefix();
+      //$configProperties = \Drupal::service('config.typed')->getDefinition("$configPrefix.*")['mapping'];
+      //$this->configSchema = $configProperties;
+    //}
 
     parent::__construct($rawValues, $fieldName, $entityType, $bundle, $projectPluginRoot, $fieldPluginMatcher);
   }
