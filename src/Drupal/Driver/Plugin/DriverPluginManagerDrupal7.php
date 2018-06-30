@@ -49,8 +49,8 @@ class DriverPluginManagerDrupal7 extends PluginManagerBase implements PluginMana
     //foreach ($namespaces as $name => $class) {
     //  $supplementedNamespaces[$name] = $class;
     //}
-    $supplementedNamespaces = new \ArrayObject();
-    $supplementedNamespaces['Drupal\Driver'] = $driverPath;
+    $supplementedNamespaces = [];
+    $supplementedNamespaces['Drupal\Driver\Plugin\\' . $driverPluginType] = [$driverPath . '/Plugin/' . $driverPluginType];
 
     if (!is_null($projectPluginRoot)) {
       // Need some way to load project-specific plugins.
