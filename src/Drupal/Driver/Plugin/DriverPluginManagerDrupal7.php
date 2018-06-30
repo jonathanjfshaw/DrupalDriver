@@ -7,6 +7,7 @@ use Drupal\Component\Plugin\PluginManagerBase;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Component\Annotation\Plugin\Discovery\AnnotatedClassDiscovery;
 use Drupal\Component\FileCache\FileCacheFactory;
+use Drupal\Component\Plugin\Factory\DefaultFactory;
 
 /**
  * Provides a plugin manager for the Driver with Drupal 7.
@@ -87,9 +88,18 @@ class DriverPluginManagerDrupal7 extends PluginManagerBase implements PluginMana
   protected function getDiscovery() {
     if (!$this->discovery) {
       $this->discovery = new AnnotatedClassDiscovery($this->namespaces, $this->pluginDefinitionAnnotationName);
-      //$this->discovery = new ContainerDerivativeDiscoveryDecorator($discovery);
     }
     return $this->discovery;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getFactory() {
+    if (!$this->factory) {
+      $this->factory = new DefaultFactory($this, $this->pluginInterface);
+    }
+    return $this->factory;
   }
 
 }
