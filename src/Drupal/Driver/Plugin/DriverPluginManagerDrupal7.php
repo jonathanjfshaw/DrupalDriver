@@ -38,12 +38,13 @@ class DriverPluginManagerDrupal7 extends PluginManagerBase implements PluginMana
     // Add the driver to the namespaces searched for plugins.
     $reflection = new \ReflectionClass($this);
     $driverPath = dirname(dirname($reflection->getFileName()));
-    // @todo make this work for D7
+    // @todo make something like this work for D7 so as to load from modules
     //$namespaces = \Drupal::service('container.namespaces')->getArrayCopy();
     //$supplementedNamespaces = new \ArrayObject();
     //foreach ($namespaces as $name => $class) {
     //  $supplementedNamespaces[$name] = $class;
     //}
+    $supplementedNamespaces = new \ArrayObject();
     $supplementedNamespaces['Drupal\Driver'] = $driverPath;
 
     if (!is_null($projectPluginRoot)) {
