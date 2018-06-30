@@ -10,7 +10,7 @@ use Drupal\Driver\Plugin\DriverNameMatcher;
  *
  * @todo update this for D7, currently it's just a clone.
  */
-class DriverFieldDrupal8 extends DriverFieldBase implements DriverFieldInterface {
+class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface {
 
   /**
    * The general field definition.
