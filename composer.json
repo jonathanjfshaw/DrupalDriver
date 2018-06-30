@@ -16,7 +16,8 @@
     "symfony/process": "~2.5|~3.0",
     "symfony/dependency-injection": "~2.6|~3.0",
     "drupal/core-utility": "^8.4",
-    "drupal/core-plugin": "^8.0"
+    "drupal/core-plugin": "^8.0",
+    "drupal/core-annotation": "^8.0"
   },
   "require-dev": {
     "drupal/coder": "~8.2.0",
