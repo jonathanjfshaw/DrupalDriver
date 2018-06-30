@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Discovery\DiscoveryCachedTrait;
 use Drupal\Component\Plugin\PluginManagerBase;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Component\Annotation\Plugin\Discovery\AnnotatedClassDiscovery;
+use Drupal\Component\FileCache\FileCacheFactory;
 
 /**
  * Provides a plugin manager for the Driver with Drupal 7.
@@ -39,6 +40,11 @@ class DriverPluginManagerDrupal7 extends PluginManagerBase implements PluginMana
         $driverPluginType,
         $projectPluginRoot = NULL
     ) {
+
+    // Ensure that FileCacheFactory has a prefix.
+    // @todo this is insecure, as cache can be polluted by third party;
+    // it might be possible to provide a malicious plugin.
+    FileCacheFactory::setPrefix('prefix');
 
     // Add the driver to the namespaces searched for plugins.
     $reflection = new \ReflectionClass($this);
