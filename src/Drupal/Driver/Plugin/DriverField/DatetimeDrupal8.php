@@ -8,7 +8,7 @@ use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
  * A driver field plugin for datetime fields.
  *
  * @DriverField(
- *   id = "datetime",
+ *   id = "datetime8",
  *   version = 8,
  *   fieldTypes = {
  *     "datetime",

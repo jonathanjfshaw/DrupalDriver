@@ -59,7 +59,7 @@ class DriverFieldPluginBase extends PluginBase implements DriverFieldPluginInter
    */
   public function processValues($values) {
     if (!is_array($values)) {
-      throw new \Exception("Values must be an array");
+      throw new \Exception("Values passed to field plugin '" . $this->getPluginId() . "' for field named '" . $this->field->getName() . "' of type '" . $this->field->getType() . "'must be an array.");
     }
     $processed = [];
     foreach ($values as $value) {

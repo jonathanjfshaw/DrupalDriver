@@ -2,39 +2,39 @@
 
 namespace Drupal\Driver\Plugin\DriverField;
 
-use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
+use Drupal\Driver\Plugin\DriverFieldPluginDrupal7Base;
 
 /**
  * A driver field plugin for link fields.
  *
  * @DriverField(
- *   id = "link8",
- *   version = 8,
+ *   id = "link7",
+ *   version = 7,
  *   fieldTypes = {
- *     "link",
+ *     "link_field",
  *   },
  *   weight = -100,
  * )
  */
-class LinkDrupal8 extends DriverFieldPluginDrupal8Base {
+class LinkDrupal7 extends DriverFieldPluginDrupal7Base {
 
   /**
    * {@inheritdoc}
    */
   protected function assignPropertyNames($value) {
     // For links we support unkeyed arrays in which the first item is the title,
-    // the second is the uri and third is options.
+    // and the second is the url.
     $keyedValue = $value;
     if (!is_array($value)) {
-      $keyedValue = ['uri' => $value];
+      $keyedValue = ['url' => $value];
     }
     elseif (count($value) === 1) {
-      $keyedValue = ['uri' => end($value)];
+      $keyedValue = ['url' => end($value)];
     }
     // Convert unkeyed array.
     else {
-      if (!isset($value['uri']) && isset($value[1])) {
-        $keyedValue['uri'] = $value[1];
+      if (!isset($value['url']) && isset($value[1])) {
+        $keyedValue['url'] = $value[1];
         unset($keyedValue[1]);
       }
       if (!isset($value['title']) && isset($value[0])) {
@@ -46,8 +46,8 @@ class LinkDrupal8 extends DriverFieldPluginDrupal8Base {
         unset($keyedValue[2]);
       }
     }
-    if (!isset($keyedValue['uri'])) {
-      throw new \Exception("Uri could not be identified from passed value: " . print_r($value, TRUE));
+    if (!isset($keyedValue['url'])) {
+      throw new \Exception("Url could not be identified from passed value: " . print_r($value, TRUE));
     }
     return $keyedValue;
   }
@@ -56,23 +56,15 @@ class LinkDrupal8 extends DriverFieldPluginDrupal8Base {
    * {@inheritdoc}
    */
   protected function processValue($value) {
-    // 'options' is required to be an array, otherwise the utility class
-    // Drupal\Core\Utility\UnroutedUrlAssembler::assemble() will complain.
-    $options = [];
-    if (!empty($value['options'])) {
-      parse_str($value['options'], $options);
-    }
-
     // Default title to uri.
-    $title = $value['uri'];
+    $title = $value['url'];
     if (isset($value['title'])) {
       $title = $value['title'];
     }
 
     $processedValue = [
-      'uri' => $value['uri'],
-      'title' => $title,
-      'options' => $options,
+      'url' => $value['url'],
+      'title' => $title
     ];
     return $processedValue;
   }

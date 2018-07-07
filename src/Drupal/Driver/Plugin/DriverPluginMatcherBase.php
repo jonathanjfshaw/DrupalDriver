@@ -102,8 +102,9 @@ class DriverPluginMatcherBase implements DriverPluginMatcherInterface {
 
     // Get stored plugins if available.
     $targetKey = serialize($target);
-    if (isset($this->matchedDefinitions[$targetKey])) {
-      return $this->matchedDefinitions[$targetKey];
+    $type = $this->getDriverPluginType();
+    if (isset($this->matchedDefinitions[$type][$targetKey])) {
+      return $this->matchedDefinitions[$type][$targetKey];
     }
 
     // Discover plugins, discard those that don't match the target, and sort.
@@ -112,7 +113,7 @@ class DriverPluginMatcherBase implements DriverPluginMatcherInterface {
     $sortedDefinitions = $this->sortDefinitions($filteredDefinitions);
 
     $this->setMatchedDefinitions($targetKey, $sortedDefinitions);
-    return $this->matchedDefinitions[$targetKey];
+    return $this->matchedDefinitions[$type][$targetKey];
   }
 
   /**
@@ -340,7 +341,7 @@ class DriverPluginMatcherBase implements DriverPluginMatcherInterface {
    *   An array of plugin definitions matched & sorted against the target key.
    */
   protected function setMatchedDefinitions($targetKey, array $definitions) {
-    $this->matchedDefinitions[$targetKey] = $definitions;
+    $this->matchedDefinitions[$this->getDriverPluginType()][$targetKey] = $definitions;
   }
 
 }

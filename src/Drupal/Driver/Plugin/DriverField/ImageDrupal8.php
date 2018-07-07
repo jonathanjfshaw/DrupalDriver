@@ -8,7 +8,7 @@ use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
  * A driver field plugin for image fields.
  *
  * @DriverField(
- *   id = "image",
+ *   id = "image8",
  *   version = 8,
  *   fieldTypes = {
  *     "image",

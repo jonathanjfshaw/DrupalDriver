@@ -3,7 +3,9 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Exception\Exception;
 use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal7;
+use Drupal\Driver\Wrapper\Field\DriverFieldDrupal7;
 
 /**
  * Drupal 7 core.
@@ -55,17 +57,54 @@ class Drupal7 extends AbstractCore {
     $this->expandEntityProperties($node);
 
     // Attempt to decipher any fields that may be specified.
-    $this->expandEntityFields('node', $node);
-
-    // Set defaults that haven't already been set.
-    $defaults = clone $node;
-    node_object_prepare($defaults);
-    $node = (object) array_merge((array) $defaults, (array) $node);
+    $this->expandNodeFields('node', $node);
 
     $entity = $this->getNewEntity('node');
     $entity->setFields((array) $node);
     $entity->save();
     return $entity->getEntity();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function expandNodeFields($entity_type, \stdClass $entity, array $base_fields = array()) {
+    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
+    $info = entity_get_info($entity_type);
+    if (isset($info['entity keys']['bundle'])) {
+      $bundle_key = $info['entity keys']['bundle'];
+    }
+    else {
+      // This entity does not have bundles.
+      $bundle_key = NULL;
+    }
+    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
+      $bundle = $entity->$bundle_key;
+    }
+    else {
+      $bundle = $entity_type;
+    }
+
+    foreach ($field_types as $field_name => $type) {
+      if (isset($entity->$field_name)) {
+        // @todo find a bettter way of standardising single/multi value fields
+        if (is_array($entity->$field_name)) {
+          $fieldValues = $entity->$field_name;
+        }
+        else {
+          $fieldValues = [$entity->$field_name];
+        }
+        $field = new DriverFieldDrupal7(
+          $fieldValues,
+          $field_name,
+          $entity_type,
+          $bundle
+        );
+        // @todo sort language properly
+        $entity->$field_name = [];
+        $entity->$field_name['und'] = $field->getProcessedValues();
+      }
+    }
   }
 
   /**

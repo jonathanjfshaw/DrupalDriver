@@ -263,6 +263,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = array()) {
+    // @todo delete this method?
     $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
     $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
     if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {

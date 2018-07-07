@@ -140,14 +140,17 @@ abstract class DriverFieldBase implements DriverFieldInterface {
       $this->setProcessedValues($this->getRawValues());
       $fieldPluginMatcher = $this->getFieldPluginMatcher();
       $definitions = $fieldPluginMatcher->getMatchedDefinitions($this);
+      if (empty($definitions)) {
+        throw new \Exception("No suitable driver field plugin could be found.");
+      }
       // Process values through matched plugins, until a plugin
       // declares it is the final one.
       foreach ($definitions as $definition) {
         $plugin = $fieldPluginMatcher->createInstance($definition['id'], ['field' => $this]);
         $processedValues = $plugin->processValues($this->processedValues);
-        if (!is_array($processedValues)) {
-          throw new \Exception("Field plugin failed to return array of processed values.");
-        }
+        //if (!is_array($processedValues)) {
+        //  throw new \Exception("Field plugin failed to return array of processed values.");
+       // }
         $this->setProcessedValues($processedValues);
         if ($plugin->isFinal($this)) {
           break;
@@ -216,10 +219,10 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   /**
    * Sets the processed values.
    *
-   * @param array $values
-   *   An array of processed field value sets.
+   * @param mixed $values
+   *   An variable or array of processed field value sets.
    */
-  protected function setProcessedValues(array $values) {
+  protected function setProcessedValues($values) {
     $this->processedValues = $values;
   }
 

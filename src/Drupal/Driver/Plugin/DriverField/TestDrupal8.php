@@ -8,7 +8,7 @@ use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
  * A driver field plugin for testing purposes.
  *
  * @DriverField(
- *   id = "test",
+ *   id = "test8",
  *   version = 8,
  *   fieldNames = {
  *     "name",

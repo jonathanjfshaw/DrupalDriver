@@ -10,7 +10,7 @@ use Drupal\Driver\Plugin\DriverEntityPluginMatcher;
  * A driver field plugin for entity reference fields.
  *
  * @DriverField(
- *   id = "entity_reference",
+ *   id = "entity_reference8",
  *   version = 8,
  *   fieldTypes = {
  *     "entity_reference",

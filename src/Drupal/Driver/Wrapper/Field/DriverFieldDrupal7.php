@@ -105,10 +105,13 @@ class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface
    * {@inheritdoc}
    */
   public function getType() {
-    if (!empty($this->definition)) {
-      return field_info_field($this->getName())['type'];
+    if (!empty($this->getDefinition())) {
+      $type =  field_info_field($this->getName())['type'];
     }
-    else return '_property';
+    else {
+      $type = '_property';
+    }
+    return $type;
   }
 
   /**
@@ -140,7 +143,7 @@ class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface
       }
       $candidates[$label] = $machineName;
     }
-    // @todo this is a hack to get around the fact that node type is not a field
+    // @todo this is a hack to get around the fact that node type is a property not a field
     $candidates['type'] = 'type';
     return $candidates;
   }
