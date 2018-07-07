@@ -4,6 +4,7 @@ namespace Drupal\Driver\Wrapper\Field;
 
 use Drupal\Driver\Plugin\DriverPluginMatcherInterface;
 use Drupal\Driver\Plugin\DriverFieldPluginMatcher;
+use Drupal\Driver\Plugin\DriverNameMatcher;
 
 /**
  * A base class for a Driver field wrapper.
@@ -188,6 +189,21 @@ abstract class DriverFieldBase implements DriverFieldInterface {
    */
   protected function getFieldPluginMatcher() {
     return $this->fieldPluginMatcher;
+  }
+
+  /**
+   * Get the machine name of the field from a human-readable identifier.
+   *
+   * @return string
+   *   The machine name of a field.
+   */
+  protected function identify($identifier) {
+    $matcher = new DriverNameMatcher($this->getEntityFieldCandidates(), "field_");
+    $result = $matcher->identify($identifier);
+    if (is_null($result)) {
+      throw new \Exception("Field or property cannot be identified. '$identifier' does not match anything on '" . $this->getEntityType() . "'.");
+    }
+    return $result;
   }
 
   /**

@@ -3,7 +3,6 @@
 namespace Drupal\Driver\Wrapper\Field;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
-use Drupal\Driver\Plugin\DriverNameMatcher;
 
 /**
  * A Driver field object that holds information about Drupal 8 field.
@@ -115,16 +114,16 @@ class DriverFieldDrupal8 extends DriverFieldBase implements DriverFieldInterface
   }
 
   /**
-   * Get the machine name of the field from a human-readable identifier.
+   * Gets the machine names and labels for all fields on an entity.
    *
-   * @return string
-   *   The machine name of a field.
+   * Fields are assembled into an array of field machine names and labels ready
+   * for DriverNameMatcher. Read-only fields are not removed because
+   * DriverFields can be used for comparing as well as writing values.
+   *
+   * @return array
+   *   An array of machine names keyed by label.
    */
-  protected function identify($identifier) {
-    // Get all the candidate fields. Assemble them into an array of field
-    // machine names and labels ready for DriverNameMatcher. Read-only fields
-    // are not removed because DriverFields can be used for comparing as well
-    // as writing values.
+  protected function getEntityFieldCandidates() {
     $candidates = [];
     if ($this->isConfigProperty()) {
       foreach ($this->configSchema as $id => $subkeys) {
@@ -133,21 +132,15 @@ class DriverFieldDrupal8 extends DriverFieldBase implements DriverFieldInterface
       }
     }
     else {
-      $entityMatcher = \Drupal::service('entity_field.manager');
-      $fields = $entityMatcher->getFieldDefinitions($this->entityType, $this->bundle);
+      $entityManager = \Drupal::service('entity_field.manager');
+      $fields = $entityManager->getFieldDefinitions($this->entityType, $this->bundle);
       foreach ($fields as $machineName => $definition) {
         $label = (string) $definition->getLabel();
         $label = empty($label) ? $machineName : $label;
         $candidates[$label] = $machineName;
       }
     }
-
-    $matcher = new DriverNameMatcher($candidates, "field_");
-    $result = $matcher->identify($identifier);
-    if (is_null($result)) {
-      throw new \Exception("Field or property cannot be identified. '$identifier' does not match anything on '" . $this->getEntityType() . "'.");
-    }
-    return $result;
+    return $candidates;
   }
 
 }

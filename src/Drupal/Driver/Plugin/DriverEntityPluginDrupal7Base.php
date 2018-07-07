@@ -109,6 +109,7 @@ class DriverEntityPluginDrupal7Base extends DriverEntityPluginBase implements Dr
    */
   public function getEntity() {
     // @todo is there any way to validate an object is a Drupal entity in D7?
+    return $this->entity;
   }
 
   /**

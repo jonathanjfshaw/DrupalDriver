@@ -376,7 +376,8 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
         else {
           $bundleField = $this->getNewDriverField($bundleKey, $bundleFieldMatch[$bundleKey]);
         }
-        $this->setBundle($bundleField->getProcessedValues()[0]['target_id']);
+        $bundleValue = $this->getProcessedBundle($bundleField);
+        $this->setBundle($bundleValue);
       }
 
       // Return the other fields (with the bundle field now removed).

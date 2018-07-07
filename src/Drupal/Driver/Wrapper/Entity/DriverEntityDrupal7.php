@@ -43,4 +43,17 @@ class DriverEntityDrupal7 extends DriverEntityBase implements DriverEntityWrappe
     return $entity;
   }
 
+  /**
+   * Get the processed bundle value from the field plugin.
+   *
+   * @param \Drupal\Driver\Wrapper\Field\DriverFieldInterface $bundleField
+   *   A wrapper for the bundle field.
+   *
+   * @return string
+   *   The bundle ID.
+   */
+  protected function getProcessedBundle($bundleField) {
+    return $bundleField->getProcessedValues()[0];
+  }
+
 }

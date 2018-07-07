@@ -62,7 +62,12 @@ class NodeDrupal7 extends DriverEntityPluginDrupal7Base {
    * {@inheritdoc}
    */
   public function save() {
-    node_save($this->getEntity());
+    $entity = $this->getEntity();
+    if ($this->supportsBundles()) {
+      $bundleKey = $this->getBundleKey();
+      $entity->$bundleKey = $this->bundle;
+    }
+    node_save($entity);
     $this->nid = $this->id();
   }
 
