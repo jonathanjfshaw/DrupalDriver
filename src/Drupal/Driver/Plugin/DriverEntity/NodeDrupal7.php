@@ -68,23 +68,13 @@ class NodeDrupal7 extends DriverEntityPluginDrupal7Base {
       $bundleKey = $this->getBundleKey();
       $entity->$bundleKey = $this->bundle;
     }
-    print_r($entity);
-    //throw new \Exception();
+
     // Set defaults that haven't already been set.
     $defaults = clone $entity;
     node_object_prepare($defaults);
     $this->entity = (object) array_merge((array) $defaults, (array) $entity);
     node_save($this->getEntity());
     $this->nid = $this->id();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setFields(array $fields) {
-    if (!$this->hasEntity()) {
-      $this->entity = (object) $fields;
-    }
   }
 
   /**

@@ -62,9 +62,9 @@ class DriverFieldPluginBase extends PluginBase implements DriverFieldPluginInter
       throw new \Exception("Values passed to field plugin '" . $this->getPluginId() . "' for field named '" . $this->field->getName() . "' of type '" . $this->field->getType() . "'must be an array.");
     }
     $processed = [];
-    foreach ($values as $value) {
+    foreach ($values as $key => $value) {
       $value = $this->assignPropertyNames($value);
-      $processed[] = $this->processValue($value);
+      $processed[$key] = $this->processValue($value);
     }
     return $processed;
   }

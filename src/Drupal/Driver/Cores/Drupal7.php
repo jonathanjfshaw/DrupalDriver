@@ -43,68 +43,27 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeCreate($node) {
+    // @todo figure out the purpose of this, whether it is safe to omit
     // Set original if not set.
-    if (!isset($node->original)) {
-      $node->original = clone $node;
-    }
+    //if (!isset($node->original)) {
+    //  $node->original = clone $node;
+    //}
 
+    // @todo fix author within plugin
     // Assign authorship if none exists and `author` is passed.
     if (!isset($node->uid) && !empty($node->author) && ($user = user_load_by_name($node->author))) {
       $node->uid = $user->uid;
+      unset($node->author);
     }
 
     // Convert properties to expected structure.
-    $this->expandEntityProperties($node);
-
-    // Attempt to decipher any fields that may be specified.
-    $this->expandNodeFields('node', $node);
+    //$this->expandEntityProperties($node);
+    // @todo allow assigning bundle by label
 
     $entity = $this->getNewEntity('node');
     $entity->setFields((array) $node);
     $entity->save();
     return $entity->getEntity();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function expandNodeFields($entity_type, \stdClass $entity, array $base_fields = array()) {
-    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
-    $info = entity_get_info($entity_type);
-    if (isset($info['entity keys']['bundle'])) {
-      $bundle_key = $info['entity keys']['bundle'];
-    }
-    else {
-      // This entity does not have bundles.
-      $bundle_key = NULL;
-    }
-    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
-      $bundle = $entity->$bundle_key;
-    }
-    else {
-      $bundle = $entity_type;
-    }
-
-    foreach ($field_types as $field_name => $type) {
-      if (isset($entity->$field_name)) {
-        // @todo find a bettter way of standardising single/multi value fields
-        if (is_array($entity->$field_name)) {
-          $fieldValues = $entity->$field_name;
-        }
-        else {
-          $fieldValues = [$entity->$field_name];
-        }
-        $field = new DriverFieldDrupal7(
-          $fieldValues,
-          $field_name,
-          $entity_type,
-          $bundle
-        );
-        // @todo sort language properly
-        $entity->$field_name = [];
-        $entity->$field_name['und'] = $field->getProcessedValues();
-      }
-    }
   }
 
   /**

@@ -53,7 +53,7 @@ class DriverEntityDrupal7 extends DriverEntityBase implements DriverEntityWrappe
    *   The bundle ID.
    */
   protected function getProcessedBundle($bundleField) {
-    return $bundleField->getProcessedValues()[0];
+    return $bundleField->getProcessedValues();
   }
 
 }

@@ -2,22 +2,22 @@
 
 namespace Drupal\Driver\Plugin\DriverField;
 
-use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
-use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
+use Drupal\Driver\Plugin\DriverFieldPluginDrupal7Base;
+use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal7;
 
 /**
  * A driver field plugin for entity reference fields.
  *
  * @DriverField(
- *   id = "entity_reference8",
- *   version = 8,
+ *   id = "entity_reference7",
+ *   version = 7,
  *   fieldTypes = {
- *     "entity_reference",
+ *     "entityreference",
  *   },
  *   weight = -100,
  * )
  */
-class EntityReferenceDrupal8 extends DriverFieldPluginDrupal8Base {
+class EntityReferenceDrupal7 extends DriverFieldPluginDrupal7Base {
 
   use EntityReferenceTrait;
 
@@ -32,25 +32,32 @@ class EntityReferenceDrupal8 extends DriverFieldPluginDrupal8Base {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     // Determine id & label keys.
-    $this->entityTypeId = $this->field->getStorageDefinition()->getSetting('target_type');
-    $entity_definition = \Drupal::entityManager()->getDefinition($this->entityTypeId);
-    $this->idKey = $entity_definition->getKey('id');
+    $this->entityTypeId = $this->field->getStorageDefinition()['settings']['target_type'];
+    $entity_info = entity_get_info($this->entityTypeId);
+    $this->idKey = $entity_info['entity keys']['id'];
     $this->labelKeys = $this->getLabelKeys();
 
     // Determine target bundle restrictions.
     if ($this->targetBundles = $this->getTargetBundles()) {
-      $this->targetBundleKey = $entity_definition->getKey('bundle');
+      $this->targetBundleKey = $entity_info['entity keys']['bundle'];
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getMainPropertyName() {
+    return 'target_id';
   }
 
   /**
    * Gets an new blank driver entity wrapper.
    *
-   * @return \Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
+   * @return \Drupal\Driver\Wrapper\Entity\DriverEntityDrupal7;
    *   A driver entity wrapper object.
    */
   protected function getNewDriverEntity() {
-    return new DriverEntityDrupal8($this->entityTypeId);
+    return new DriverEntityDrupal7($this->entityTypeId);
   }
 
   /**
@@ -60,9 +67,9 @@ class EntityReferenceDrupal8 extends DriverFieldPluginDrupal8Base {
    *   Array of bundle names, or NULL if not able to determine bundles.
    */
   protected function getTargetBundles() {
-    $settings = $this->field->getDefinition()->getSettings();
-    if (!empty($settings['handler_settings']['target_bundles'])) {
-      return $settings['handler_settings']['target_bundles'];
+    $target_bundles = $this->field->getStorageDefinition()['settings']['handler_settings']['target_bundles'];
+    if (!empty($target_bundles)) {
+      return $target_bundles;
     }
   }
 
@@ -78,14 +85,16 @@ class EntityReferenceDrupal8 extends DriverFieldPluginDrupal8Base {
    *   The id of an entity that has $value in the $key field.
    */
   protected function queryByKey($key, $value) {
-    $query = \Drupal::entityQuery($this->entityTypeId);
-    // @todo make this always case-insensitive.
-    $query->condition($key, $value);
+    $entity_info = entity_get_info($this->entityTypeId);
+    $query = db_select($entity_info['base table'], 't')
+      ->fields('t', [$this->idKey])
+      // @todo make this always case-insensitive.
+      ->condition('t.' . $key, $value);
     if ($this->targetBundles && $this->targetBundleKey) {
       $query->condition($this->targetBundleKey, $this->targetBundles, 'IN');
     }
-    if ($entities = $query->execute()) {
-      $target_id = array_shift($entities);
+    $target_id = $query->execute()->fetchField();
+    if ($target_id) {
       return $target_id;
     }
   }

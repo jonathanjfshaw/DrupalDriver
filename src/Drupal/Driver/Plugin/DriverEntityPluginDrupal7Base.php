@@ -48,7 +48,6 @@ class DriverEntityPluginDrupal7Base extends DriverEntityPluginBase implements Dr
    */
   protected $isNew = TRUE;
 
-
   /**
    * {@inheritdoc}
    */
@@ -107,10 +106,9 @@ class DriverEntityPluginDrupal7Base extends DriverEntityPluginBase implements Dr
   /**
    * {@inheritdoc}
    */
-  public function getEntity() {
-    // @todo is there any way to validate an object is a Drupal entity in D7?
-    return $this->entity;
-  }
+//  public function getEntity() {
+//    return $this->entity;
+//  }
 
   /**
    * {@inheritdoc}
@@ -190,7 +188,9 @@ class DriverEntityPluginDrupal7Base extends DriverEntityPluginBase implements Dr
     if (!($field instanceof DriverFieldInterface)) {
       $field = $this->getNewDriverField($identifier, $field);
     }
-    $this->getEntity()->set($field->getName(), $field->getProcessedValues());
+    $entity = $this->getEntity();
+    $entity->{$field->getName()} = $field->getProcessedValues();
+    $this->entity = $entity;
   }
 
   /**

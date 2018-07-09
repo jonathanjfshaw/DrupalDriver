@@ -98,15 +98,15 @@ class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface
    * {@inheritdoc}
    */
   public function getStorageDefinition() {
-    //return $this->getDefinition()->getFieldStorageDefinition();
+    return field_info_field($this->getName());
   }
 
   /**
    * {@inheritdoc}
    */
   public function getType() {
-    if (!empty($this->getDefinition())) {
-      $type =  field_info_field($this->getName())['type'];
+    if (!empty($this->getStorageDefinition())) {
+      $type =  $this->getStorageDefinition()['type'];
     }
     else {
       $type = '_property';
@@ -133,7 +133,9 @@ class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface
    */
   protected function getEntityFieldCandidates() {
     $candidates = [];
+
     $fields = field_info_instances($this->entityType, $this->bundle);
+    // @todo this logic does not allow for 2 different fields with the same label
     foreach ($fields as $machineName => $definition) {
       if ((isset($definition['label']) && (!empty($definition['label'])))) {
         $label = $definition['label'];
@@ -143,8 +145,13 @@ class DriverFieldDrupal7 extends DriverFieldBase implements DriverFieldInterface
       }
       $candidates[$label] = $machineName;
     }
-    // @todo this is a hack to get around the fact that node type is a property not a field
-    $candidates['type'] = 'type';
+
+    // @todo the table name is not necessarily the entity name (e.g. users)
+    //if (isset($entity_info[$name]['base table'])) {
+    //  $entity_info[$name]['base table field types'] =
+    foreach (array_keys(drupal_get_schema($this->entityType)['fields']) as $fieldName) {
+      $candidates[$fieldName] = $fieldName;
+    }
     return $candidates;
   }
 

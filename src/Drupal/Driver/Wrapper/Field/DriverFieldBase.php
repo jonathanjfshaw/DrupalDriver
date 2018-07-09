@@ -143,6 +143,7 @@ abstract class DriverFieldBase implements DriverFieldInterface {
       if (empty($definitions)) {
         throw new \Exception("No suitable driver field plugin could be found.");
       }
+
       // Process values through matched plugins, until a plugin
       // declares it is the final one.
       foreach ($definitions as $definition) {
