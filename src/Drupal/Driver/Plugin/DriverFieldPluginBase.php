@@ -3,13 +3,11 @@
 namespace Drupal\Driver\Plugin;
 
 use Drupal\Component\Plugin\PluginBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
 /**
  * Base class for Driver field plugins.
  */
-class DriverFieldPluginBase extends PluginBase implements DriverFieldPluginInterface, ContainerFactoryPluginInterface {
+class DriverFieldPluginBase extends PluginBase implements DriverFieldPluginInterface {
 
   /**
    * The field object this plugin is processing values for.
@@ -29,22 +27,6 @@ class DriverFieldPluginBase extends PluginBase implements DriverFieldPluginInter
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->field = $configuration['field'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(
-        ContainerInterface $container,
-        array $configuration,
-        $plugin_id,
-        $plugin_definition
-    ) {
-    return new static(
-    $configuration,
-    $plugin_id,
-    $plugin_definition
-    );
   }
 
   /**

@@ -6,11 +6,13 @@ use Drupal\Driver\Wrapper\Field\DriverFieldInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
 use Drupal\Driver\Wrapper\Entity\DriverEntityInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
 /**
  * Provides a base class for the Driver's entity plugins.
  */
-class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements DriverEntityPluginInterface, DriverEntityInterface {
+class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements DriverEntityPluginInterface, DriverEntityInterface, ContainerFactoryPluginInterface {
 
   /**
    * The id of the attached entity.
@@ -61,6 +63,22 @@ class DriverEntityPluginDrupal8Base extends DriverEntityPluginBase implements Dr
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = \Drupal::entityTypeManager();
     $this->storage = $this->entityTypeManager->getStorage($this->type);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition
+    );
   }
 
   /**

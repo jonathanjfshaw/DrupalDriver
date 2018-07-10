@@ -3,7 +3,6 @@
 namespace Drupal\Driver\Plugin;
 
 use Drupal\Component\Plugin\PluginBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Driver\Wrapper\Entity\DriverEntityInterface;
 
 /**
@@ -81,22 +80,6 @@ abstract class DriverEntityPluginBase extends PluginBase implements DriverEntity
     if (isset($configuration['projectPluginRoot'])) {
       $this->projectPluginRoot = $configuration['projectPluginRoot'];
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(
-        ContainerInterface $container,
-        array $configuration,
-        $plugin_id,
-        $plugin_definition
-    ) {
-    return new static(
-    $configuration,
-    $plugin_id,
-    $plugin_definition
-    );
   }
 
   /**

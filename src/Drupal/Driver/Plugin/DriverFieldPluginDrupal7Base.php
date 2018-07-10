@@ -2,12 +2,10 @@
 
 namespace Drupal\Driver\Plugin;
 
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-
 /**
  * Base class for Driver field plugins.
  */
-class DriverFieldPluginDrupal7Base extends DriverFieldPluginBase implements DriverFieldPluginInterface, ContainerFactoryPluginInterface {
+class DriverFieldPluginDrupal7Base extends DriverFieldPluginBase implements DriverFieldPluginInterface {
 
   /**
    * The entity language.
