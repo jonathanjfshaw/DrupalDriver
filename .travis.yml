@@ -2,28 +2,28 @@ language: php
 
 php:
   - 5.6
-  #- 7.0
-  #- 7.1
-  #- 7.2
+  - 7.0
+  - 7.1
+  - 7.2
 
 env:
   global:
     - PATH=$PATH:/home/travis/.composer/vendor/bin
   matrix:
-    #- TEST=syntax DRUPAL=0
-    #- TEST=unit DRUPAL=0
-    #- TEST=kernel DRUPAL=8
+    - TEST=syntax DRUPAL=0
+    - TEST=unit DRUPAL=0
+    - TEST=kernel DRUPAL=8
     - TEST=behat DRUPAL=7
-    #- TEST=behat DRUPAL=8
+    - TEST=behat DRUPAL=8
 
-#matrix:
-#  include:
-#    - php: 5.5
-#      env: TEST=syntax DRUPAL=0
-#    - php: 5.5
-#      env: TEST=unit DRUPAL=0
-#    - php: 5.5
-#      env: TEST=behat DRUPAL=6
+matrix:
+  include:
+    - php: 5.5
+      env: TEST=syntax DRUPAL=0
+    - php: 5.5
+      env: TEST=unit DRUPAL=0
+    - php: 5.5
+      env: TEST=behat DRUPAL=6
 
 allow_failures:
     # Behat tests are not necessarily commit blocking for the driver.
